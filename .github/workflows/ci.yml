@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight
+  workflow_dispatch:      # Allow manual trigger
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run black
+        run: poetry run black --check src
+
+      - name: Run mypy
+        run: poetry run mypy src
+
+      - name: Run pylint
+        run: poetry run pylint src/tak_shadowfleet_id
+
+  scrape:
+    needs: lint-and-test
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0 # Full history for tagging/releases
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run collector
+        run: poetry run tak-shadowfleet-id
+
+      - name: Commit and push if changed
+        id: commit_step
+        run: |
+          git config --global user.name "Stefan Gofferje"
+          git config --global user.email "stefan@gofferje.net"
+          git add shadowfleet.json
+          if git diff --staged --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes to shadowfleet.json"
+          else
+            git commit -m "Update shadowfleet dataset (automated)"
+            git push
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        if: steps.commit_step.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="data-$(date +'%Y-%m-%d')"
+          gh release create "$TAG_NAME" shadowfleet.json --title "Shadow Fleet Data Update - $(date +'%Y-%m-%d')" --notes "Automated daily data update."
+
+      - name: Prune old releases
+        if: steps.commit_step.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Keep the latest 10 releases
+          RELEASES_TO_KEEP=10
+          ALL_RELEASES=$(gh release list --limit 100 | awk '{print $1}')
+          COUNT=0
+          for RELEASE in $ALL_RELEASES; do
+            COUNT=$((COUNT + 1))
+            if [ $COUNT -gt $RELEASES_TO_KEEP ]; then
+              echo "Deleting old release: $RELEASE"
+              gh release delete "$RELEASE" --yes --cleanup-tag
+            fi
+          done
+
+  build-docker:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: actions/setup-qemu@v3
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx@v3
+
+      - name: Build (multi-arch)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false # Only test build for now
+          tags: tak-shadowfleet-id:test

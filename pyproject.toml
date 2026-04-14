@@ -1,0 +1,49 @@
+[project]
+name = "tak-shadowfleet-id"
+version = "0.1.0"
+description = "Scraper for Shadow Fleet Vessel identification for TAK"
+authors = [
+    {name = "Stefan Gofferje", email = "stefan@gofferje.net"}
+]
+license = {text = "GPL-3.0-or-later"}
+requires-python = ">=3.12"
+dependencies = [
+    "requests (>=2.32.5,<3.0.0)",
+    "lxml (>=6.0.2,<7.0.0)",
+    "pandas (>=3.0.1,<4.0.0)",
+    "python-dateutil (>=2.9.0.post0,<3.0.0)"
+]
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+mypy = "^1.15.0"
+pylint = "^3.3.4"
+types-requests = "^2.32.0.20241016"
+types-python-dateutil = "^2.9.0.20241206"
+pandas-stubs = "^2.2.3.241126"
+
+[project.scripts]
+tak-shadowfleet-id = "tak_shadowfleet_id.collector:main"
+
+[tool.poetry]
+packages = [{include = "tak_shadowfleet_id", from = "src"}]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114", # missing-module-docstring
+    "C0115", # missing-class-docstring
+    "C0116", # missing-function-docstring
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

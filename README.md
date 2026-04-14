@@ -27,22 +27,6 @@ The data collector currently fetches data the following sources:
 
 - CSV list, **License:** [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 
-# Container use
-A multi-arch Docker image is available for both AMD64 and ARM64.
-
-### Build
-To build the image locally:
-```bash
-docker build -t tak-shadowfleet-id:latest .
-```
-
-### Run
-To run the data collector inside a container:
-```bash
-docker run --rm -v $(pwd):/app tak-shadowfleet-id:latest
-```
-Note: To persist the `shadowfleet.json` file, mount the current directory as `/app`.
-
 # Installation
 This project uses [Poetry](https://python-poetry.org/) for dependency management.
 
@@ -66,7 +50,6 @@ This project is configured with GitHub Actions to run the data collector daily a
 1. Runs linting and type checking (`black`, `mypy`, `pylint`).
 2. Executes the data collector.
 3. Automatically commits and pushes changes to `shadowfleet.json` back to the repository if updates are found.
-4. Performs a multi-arch Docker build test.
 
 # License for the code
 Copyright Stefan Gofferje.

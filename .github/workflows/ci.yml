@@ -9,6 +9,9 @@ on:
     - cron: '0 0 * * *'  # Daily at midnight
   workflow_dispatch:      # Allow manual trigger
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest

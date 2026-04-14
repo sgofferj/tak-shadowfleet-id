@@ -88,7 +88,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_NAME="data-$(date +'%Y-%m-%dT%H:%M:%S%z')"
+          TAG_NAME="data-$(date +'%Y%m%dT%H%M%S')"
           gh release create "$TAG_NAME" shadowfleet.json --title "$(date +'%Y-%m-%dT%H:%M:%S%z') update" --notes "Automated daily data update."
 
       - name: Prune old releases

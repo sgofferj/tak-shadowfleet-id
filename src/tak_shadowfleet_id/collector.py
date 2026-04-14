@@ -205,9 +205,9 @@ def merge_datasets(
                 "flag"
             ) not in ["Unknown", "nan", ""]:
                 existing[imo]["flag"] = data["flag"]
-            if (existing[imo].get("type") in ["Vessel", "Unknown", "nan", ""]) and data.get(
-                "type"
-            ) not in ["Vessel", "Unknown", "nan", ""]:
+            if (
+                existing[imo].get("type") in ["Vessel", "Unknown", "nan", ""]
+            ) and data.get("type") not in ["Vessel", "Unknown", "nan", ""]:
                 existing[imo]["type"] = data["type"]
             if (existing[imo].get("operator") in ["Unknown", "nan", ""]) and data.get(
                 "operator"

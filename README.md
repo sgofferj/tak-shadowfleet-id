@@ -1,27 +1,31 @@
-# tak-shadowfleet-id from https://github.com/sgofferj/tak-shadowfleet-id
-#
-# Copyright Stefan Gofferje
-#
-# Licensed under the Gnu General Public License Version 3 or higher (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at https://www.gnu.org/licenses/gpl-3.0.en.html
+> [!CAUTION]
+> The dataset provided by this tool is collected automatically from third parties. There is no guarantee that the dataset provided by this tool is up-to-date or correct. I am not responsible for incorrect or outdated data.
+> The classification of vessels under international sanctions with the CoT type "suspicious" is protected by Freedom of Opinion and Free Speech.
+
+> [!IMPORTANT]
+> The dataset is licensed under [CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+> Because it inherits the strictest license from all sources which currently is CC-BY-NC 4.0 (see below).
+> Please note that this is the Creative Commons license with the **NONCOMMERCIAL** clause.
+
 
 # Description
-`tak-shadowfleet-id` is a Python-based scraper designed to aggregate and deduplicate data from multiple OSINT and official maritime sanction sources to identify "shadow fleet" vessels. The output is a JSON dataset (`shadowfleet.json`) suitable for integration into TAK (Team Awareness Kit) environments.
+`tak-shadowfleet-id` is a Python-based data collector designed to aggregate and deduplicate data from multiple OSINT and official maritime sanction sources to identify "shadow fleet" vessels. The output is a JSON dataset (`shadowfleet.json`) suitable for integration into TAK (Team Awareness Kit) environments.
 
 The dataset includes IMO numbers, MMSIs, vessel names, types, flags, and CoT (Cursor on Target) types.
 
-# Configuration
-The application can be configured via command-line arguments.
+## Attribution
 
-| Argument | Description | Default |
-|----------|-------------|---------|
-| `--nogit` | Skip pushing the results to a Git repository | `False` |
+The data collector currently fetches data the following sources:
 
-### Source Data
-The scraper currently fetches data from:
-- **OpenSanctions**: Simple CSV target dataset.
-- **UK Sanctions List**: Official FCDO maritime sanctions.
+### OpenSanctions
+[https://www.opensanctions.org](https://www.opensanctions.org)
+
+- Simple CSV target dataset, **License:** [CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+
+### UK FCDO Sanctions List
+[https://www.gov.uk/government/publications/the-uk-sanctions-list](https://www.gov.uk/government/publications/the-uk-sanctions-list)
+
+- CSV list, **License:** [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 
 # Container use
 A multi-arch Docker image is available for both AMD64 and ARM64.
@@ -33,7 +37,7 @@ docker build -t tak-shadowfleet-id:latest .
 ```
 
 ### Run
-To run the scraper inside a container:
+To run the data collector inside a container:
 ```bash
 docker run --rm -v $(pwd):/app tak-shadowfleet-id:latest
 ```
@@ -52,19 +56,21 @@ This project uses [Poetry](https://python-poetry.org/) for dependency management
    ```bash
    poetry install
    ```
-3. Run the scraper:
+3. Run the data collector:
    ```bash
    poetry run tak-shadowfleet-id
    ```
 
 # GitHub Actions (Scheduled CI)
-This project is configured with GitHub Actions to run the scraper daily at midnight. The workflow:
+This project is configured with GitHub Actions to run the data collector daily at midnight. The workflow:
 1. Runs linting and type checking (`black`, `mypy`, `pylint`).
-2. Executes the scraper.
+2. Executes the data collector.
 3. Automatically commits and pushes changes to `shadowfleet.json` back to the repository if updates are found.
 4. Performs a multi-arch Docker build test.
 
-# License
+# License for the code
 Copyright Stefan Gofferje.
 Software licensed under the Gnu General Public License Version 3 or higher.
-Dataset produced by this tool is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
+# License for the dataset
+The dataset produced by this tool inherits the strictest license from all sources which currently is CC-BY-NC 4.0. Please note that this is the Creative Commons license with the **NONCOMMERCIAL** clause.

@@ -3,8 +3,6 @@ name: CI
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   schedule:
     - cron: '0 0 * * *'  # Daily at midnight
   workflow_dispatch:      # Allow manual trigger
@@ -90,8 +88,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_NAME="data-$(date +'%Y-%m-%d')"
-          gh release create "$TAG_NAME" shadowfleet.json --title "Shadow Fleet Data Update - $(date +'%Y-%m-%d')" --notes "Automated daily data update."
+          TAG_NAME="data-$(date +'%Y-%m-%dT%H:%M:%S%z')"
+          gh release create "$TAG_NAME" shadowfleet.json --title "$(date +'%Y-%m-%dT%H:%M:%S%z') update" --notes "Automated daily data update."
 
       - name: Prune old releases
         if: steps.commit_step.outputs.changed == 'true'
@@ -109,41 +107,3 @@ jobs:
               gh release delete "$RELEASE" --yes --cleanup-tag
             fi
           done
-
-  build-docker:
-    needs: lint-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=ref,event=branch
-            type=sha,format=short
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}

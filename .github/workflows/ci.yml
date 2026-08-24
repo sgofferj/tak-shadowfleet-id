@@ -98,7 +98,7 @@ jobs:
         run: |
           # Keep the latest 10 releases
           RELEASES_TO_KEEP=10
-          ALL_RELEASES=$(gh release list --limit 100 | awk '{print $1}')
+          ALL_RELEASES=$(gh release list --limit 100 --json tagName --jq '.[].tagName')
           COUNT=0
           for RELEASE in $ALL_RELEASES; do
             COUNT=$((COUNT + 1))
